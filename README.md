@@ -11,6 +11,19 @@ No orchestration code. No glue logic. Just define your agents and run.
 
 ---
 
+## 🚀 Try it in 30 seconds (no API key)
+
+```bash
+git clone https://github.com/datallmhub/agentflow4j.git
+cd agentflow4j
+mvn install -DskipTests -q
+mvn -pl agentflow4j-samples exec:java
+```
+
+Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: triage → specialist → policy gate → reply. Falls back to deterministic stubs offline, or calls Mistral when `MISTRAL_API_KEY` is set.
+
+---
+
 ## ⚡ In 60 seconds
 
 ```java
@@ -64,19 +77,6 @@ Spring AI gives you primitives. **AgentFlow4J gives you a runtime.**
 - **Graph API** — explicit flows, loops, conditions, full control.
 
 Both are covered in the [docs](#-documentation).
-
----
-
-## 🚀 Try it in 30 seconds (no API key)
-
-```bash
-git clone https://github.com/datallmhub/agentflow4j.git
-cd agentflow4j
-mvn install -DskipTests -q
-mvn -pl agentflow4j-samples exec:java
-```
-
-Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: triage → specialist → policy gate → reply. Falls back to deterministic stubs offline, or calls Mistral when `MISTRAL_API_KEY` is set.
 
 ---
 
