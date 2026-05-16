@@ -134,6 +134,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 - [Two API levels (Squad + Graph)](docs/two-api-levels.md) — when to use which, with code
 - [Typed state](docs/state.md) — `StateKey<T>` instead of `Map<String, Object>`
 - [Tool policy](docs/tool-policy.md) — allow/deny tool calls per agent, with argument-aware rules
+- [State policy](docs/state-policy.md) — allow/deny writes to specific `StateKey<T>`, with argument-aware rules
 - [Resilience & error handling](docs/resilience.md) — retries, circuit breaker, budget policy
 - [Observability](docs/observability.md) — Micrometer metrics, tags, listeners
 - [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls

@@ -32,6 +32,7 @@ public final class AgentGraph implements Agent {
     private final ErrorPolicy errorPolicy;
     private final RetryPolicy retryPolicy;
     private final BudgetPolicy budgetPolicy;
+    private final StatePolicy statePolicy;
     private final int maxIterations;
     private final List<AgentListener> listeners;
     @Nullable
@@ -47,6 +48,7 @@ public final class AgentGraph implements Agent {
         this.retryPolicy = b.retryPolicy != null ? b.retryPolicy
                 : (b.errorPolicy == ErrorPolicy.RETRY_ONCE ? RetryPolicy.once() : RetryPolicy.none());
         this.budgetPolicy = b.budgetPolicy;
+        this.statePolicy = b.statePolicy;
         this.maxIterations = b.maxIterations;
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
@@ -161,6 +163,7 @@ public final class AgentGraph implements Agent {
             notifyEnter(currentNode, context);
 
             NodeOutcome outcome = executeWithPolicy(node, context);
+            outcome = enforceStatePolicy(currentNode, outcome);
             notifyExit(currentNode, outcome.result, outcome.durationNanos);
 
             if (outcome.result.hasError()) {
@@ -375,6 +378,35 @@ public final class AgentGraph implements Agent {
     }
 
     /**
+     * Runs the configured {@link StatePolicy} against the state updates a
+     * node returned. If any update is denied, the outcome is replaced with
+     * a failed {@link AgentResult} carrying a {@link StatePolicyViolation},
+     * so the existing {@link ErrorPolicy} (FAIL_FAST / RETRY_ONCE /
+     * SKIP_NODE) decides what to do next.
+     */
+    private NodeOutcome enforceStatePolicy(String nodeName, NodeOutcome outcome) {
+        if (statePolicy == StatePolicy.ALLOW_ALL || outcome.result.hasError()) {
+            return outcome;
+        }
+        for (Map.Entry<io.github.datallmhub.agentflow4j.core.StateKey<?>, Object> entry
+                : outcome.result.stateUpdates().entrySet()) {
+            io.github.datallmhub.agentflow4j.core.StateKey<?> key = entry.getKey();
+            StatePolicy.Decision decision = statePolicy.check(key, entry.getValue());
+            if (decision.denied()) {
+                String reason = decision.reason() != null ? decision.reason() : "denied";
+                StatePolicyViolation violation =
+                        new StatePolicyViolation(key, entry.getValue(), reason);
+                log.warn("graph.state.deny: graph={} node={} key={} reason={}",
+                        name, nodeName, key.name(), reason);
+                return new NodeOutcome(
+                        AgentResult.failed(AgentError.of(nodeName, violation)),
+                        outcome.durationNanos);
+            }
+        }
+        return outcome;
+    }
+
+    /**
      * Asks the {@link BudgetPolicy} whether the upcoming attempt fits in the
      * configured budget. Returns {@code null} when the call is allowed,
      * otherwise an interrupted {@link AgentResult} carrying an
@@ -518,6 +550,7 @@ public final class AgentGraph implements Agent {
         private ErrorPolicy errorPolicy = ErrorPolicy.FAIL_FAST;
         @Nullable private RetryPolicy retryPolicy;
         private BudgetPolicy budgetPolicy = BudgetPolicy.NOOP;
+        private StatePolicy statePolicy = StatePolicy.ALLOW_ALL;
         private int maxIterations = 25;
         private final List<AgentListener> listeners = new ArrayList<>();
         @Nullable
@@ -581,6 +614,11 @@ public final class AgentGraph implements Agent {
 
         public Builder budgetPolicy(BudgetPolicy policy) {
             this.budgetPolicy = Objects.requireNonNull(policy, "policy");
+            return this;
+        }
+
+        public Builder statePolicy(StatePolicy policy) {
+            this.statePolicy = Objects.requireNonNull(policy, "policy");
             return this;
         }
 
