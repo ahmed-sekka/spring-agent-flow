@@ -60,7 +60,7 @@ A multi-step, stateful workflow with routing, coordination, and resilience — w
 
 Real-world AI systems are **multi-step**, **stateful**, **failure-prone**, and **long-running**.
 
-Spring AI gives you primitives. **AgentFlow4J gives you a runtime.**
+Spring AI gives you agent primitives. **AgentFlow4J gives you a runtime.**
 
 | Spring AI | AgentFlow4J |
 |---|---|
