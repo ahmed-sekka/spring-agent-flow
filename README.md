@@ -11,9 +11,9 @@ No orchestration code. No glue logic. Just define your agents and run.
 
 ---
 
-## 🚀 Live demo of a real-world use case built with Spring Agent Flow
+## 🚀 Live demo of a real-world use case built with AgentFlow4J
 
-🔴 Sample of multi-agent **USE CASE** built with **Spring Agent Flow**:
+🔴 Sample of multi-agent **USE CASE** built with **AgentFlow4J**:
 
 <img width="800" height="400" alt="chrome-capture-2026-05-04" src="https://github.com/user-attachments/assets/8825501e-f1bf-4c27-b734-be348cd83e12" />
 
@@ -94,7 +94,7 @@ They are:
 - **long-running**
 
 Spring AI gives you primitives.
-**spring-agent-flow gives you a runtime.**
+**AgentFlow4J gives you a runtime.**
 
 ---
 
