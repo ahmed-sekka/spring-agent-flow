@@ -11,16 +11,6 @@ No orchestration code. No glue logic. Just define your agents and run.
 
 ---
 
-## 🚀 Live demo
-
-🔴 Multi-agent **B2B use case** built with **AgentFlow4J**:
-
-<img width="800" height="400" alt="Live demo" src="https://github.com/user-attachments/assets/8825501e-f1bf-4c27-b734-be348cd83e12" />
-
-👉 https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops &nbsp;·&nbsp; Source: [multi-agent-customer-ops](https://github.com/datallmhub/multi-agent-customer-ops)
-
----
-
 ## ⚡ In 60 seconds
 
 ```java
