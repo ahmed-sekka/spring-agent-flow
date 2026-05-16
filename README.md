@@ -4,7 +4,7 @@
 
 No orchestration code. No glue logic. Just define your agents and run.
 
-<img width="1024" height="1536" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
+<img width="250" height="400" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
 
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
