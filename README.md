@@ -2,6 +2,10 @@
 
 **Build stateful multi-agent workflows in Java — with graphs, retries, and persistence.**
 
+<p align="center">
+<img width="250" height="400" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
+</p>
+
 No orchestration code. No glue logic. Just define your agents and run.
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
@@ -10,9 +14,6 @@ No orchestration code. No glue logic. Just define your agents and run.
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 ---
-<p align="center">
-<img width="250" height="400" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
-</p>
         
 ## 🚀 Try it in 30 seconds (no API key)
 
