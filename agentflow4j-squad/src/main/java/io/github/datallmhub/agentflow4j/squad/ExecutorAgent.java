@@ -11,6 +11,7 @@ import io.github.datallmhub.agentflow4j.core.AgentEvent;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
 import io.github.datallmhub.agentflow4j.core.AgentUsage;
 import io.github.datallmhub.agentflow4j.core.StateKey;
+import io.github.datallmhub.agentflow4j.graph.ToolPolicy;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ResponseEntity;
 import org.springframework.ai.chat.metadata.Usage;
@@ -28,6 +29,7 @@ public final class ExecutorAgent implements Agent {
     private final ChatClient chatClient;
     private final String systemPrompt;
     private final List<ToolCallback> tools;
+    private final ToolPolicy toolPolicy;
     @Nullable private final StateKey<?> outputKey;
 
     private ExecutorAgent(Builder b) {
@@ -35,6 +37,7 @@ public final class ExecutorAgent implements Agent {
         this.chatClient = Objects.requireNonNull(b.chatClient, "chatClient");
         this.systemPrompt = b.systemPrompt;
         this.tools = List.copyOf(b.tools);
+        this.toolPolicy = b.toolPolicy;
         this.outputKey = b.outputKey;
     }
 
@@ -135,7 +138,11 @@ public final class ExecutorAgent implements Agent {
         if (!tools.isEmpty()) {
             ToolCallback[] wrapped = new ToolCallback[tools.size()];
             for (int i = 0; i < tools.size(); i++) {
-                wrapped[i] = new RecordingToolCallback(tools.get(i), collector);
+                ToolCallback tool = tools.get(i);
+                if (toolPolicy != ToolPolicy.ALLOW_ALL) {
+                    tool = new PolicyToolCallback(tool, toolPolicy);
+                }
+                wrapped[i] = new RecordingToolCallback(tool, collector);
             }
             spec = spec.toolCallbacks(wrapped);
         }
@@ -161,6 +168,7 @@ public final class ExecutorAgent implements Agent {
         private ChatClient chatClient;
         private String systemPrompt;
         private final List<ToolCallback> tools = new ArrayList<>();
+        private ToolPolicy toolPolicy = ToolPolicy.ALLOW_ALL;
         @Nullable private StateKey<?> outputKey;
 
         public Builder name(String name) {
@@ -196,6 +204,11 @@ public final class ExecutorAgent implements Agent {
 
         public Builder outputKey(StateKey<?> outputKey) {
             this.outputKey = outputKey;
+            return this;
+        }
+
+        public Builder toolPolicy(ToolPolicy toolPolicy) {
+            this.toolPolicy = Objects.requireNonNull(toolPolicy, "toolPolicy");
             return this;
         }
 
