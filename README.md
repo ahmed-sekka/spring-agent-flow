@@ -86,7 +86,7 @@ mvn install -DskipTests -q
 mvn -pl agentflow4j-samples exec:java
 ```
 
-Runs `MultiAgentCoordination` — a fully simulated multi-agent workflow with routing, coordination and state.
+Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: triage → specialist → policy gate → reply. Falls back to deterministic stubs offline, or calls Mistral when `MISTRAL_API_KEY` is set.
 
 ---
 

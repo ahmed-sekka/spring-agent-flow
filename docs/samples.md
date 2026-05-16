@@ -19,6 +19,7 @@ mvn -pl agentflow4j-samples exec:java \
 
 | Example | What it shows | Needs API key? |
 |---|---|---|
+| `SupportTriageDemo` (default) | B2B customer-ticket triage: graph + typed state + conditional routing + policy gate. Calls Mistral when `MISTRAL_API_KEY` is set, falls back to deterministic stubs otherwise. | optional |
 | `MultiAgentCoordination` | Multi-agent routing with `CoordinatorAgent` | no |
 | `MinimalPipeline` | Simple 2-step workflow using `AgentGraph` | no |
 | `AdvancedGraphDemo` | Loops, conditions, state, listeners | no |

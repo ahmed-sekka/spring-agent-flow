@@ -16,7 +16,7 @@
     <description>Runnable examples — notably the Research Squad (§8 of the spec)</description>
 
     <properties>
-        <exec.mainClass>io.github.datallmhub.agentflow4j.samples.MultiAgentCoordination</exec.mainClass>
+        <exec.mainClass>io.github.datallmhub.agentflow4j.samples.SupportTriageDemo</exec.mainClass>
     </properties>
 
     <dependencies>
