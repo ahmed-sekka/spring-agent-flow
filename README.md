@@ -135,6 +135,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 - [Typed state](docs/state.md) — `StateKey<T>` instead of `Map<String, Object>`
 - [Tool policy](docs/tool-policy.md) — allow/deny tool calls per agent, with argument-aware rules
 - [State policy](docs/state-policy.md) — allow/deny writes to specific `StateKey<T>`, with argument-aware rules
+- [Approval gate](docs/approval-gate.md) — human-in-the-loop pause/resume on sensitive nodes
 - [Resilience & error handling](docs/resilience.md) — retries, circuit breaker, budget policy
 - [Observability](docs/observability.md) — Micrometer metrics, tags, listeners
 - [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls

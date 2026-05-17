@@ -33,6 +33,7 @@ public final class AgentGraph implements Agent {
     private final RetryPolicy retryPolicy;
     private final BudgetPolicy budgetPolicy;
     private final StatePolicy statePolicy;
+    private final ApprovalGate approvalGate;
     private final int maxIterations;
     private final List<AgentListener> listeners;
     @Nullable
@@ -49,6 +50,7 @@ public final class AgentGraph implements Agent {
                 : (b.errorPolicy == ErrorPolicy.RETRY_ONCE ? RetryPolicy.once() : RetryPolicy.none());
         this.budgetPolicy = b.budgetPolicy;
         this.statePolicy = b.statePolicy;
+        this.approvalGate = b.approvalGate;
         this.maxIterations = b.maxIterations;
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
@@ -161,6 +163,17 @@ public final class AgentGraph implements Agent {
 
             Node node = nodes.get(currentNode);
             notifyEnter(currentNode, context);
+
+            AgentResult approvalInterrupt = gateApproval(currentNode, context);
+            if (approvalInterrupt != null) {
+                if (runId != null && store != null) {
+                    store.save(new Checkpoint(runId, currentNode, context,
+                            iterations - 1, approvalInterrupt.interrupt()));
+                }
+                notifyExit(currentNode, approvalInterrupt, 0L);
+                notifyGraphComplete(approvalInterrupt);
+                return approvalInterrupt;
+            }
 
             NodeOutcome outcome = executeWithPolicy(node, context);
             outcome = enforceStatePolicy(currentNode, outcome);
@@ -378,6 +391,66 @@ public final class AgentGraph implements Agent {
     }
 
     /**
+     * Consults the {@link ApprovalGate} before a node runs. Returns
+     * {@code null} when execution may proceed, otherwise an interrupted
+     * {@link AgentResult} that the caller resumes via
+     * {@link #resumeWithApproval(String, String,
+     * org.springframework.ai.chat.messages.Message...)}.
+     */
+    @Nullable
+    private AgentResult gateApproval(String nodeName, AgentContext context) {
+        if (approvalGate == ApprovalGate.NONE) {
+            return null;
+        }
+        ApprovalGate.Decision decision = approvalGate.check(nodeName, context);
+        if (!decision.requiresApproval()) {
+            return null;
+        }
+        String reason = decision.reason() != null ? decision.reason()
+                : "node '" + nodeName + "' requires human approval";
+        log.info("graph.approval.required: graph={} node={} reason={}",
+                name, nodeName, reason);
+        ApprovalRequest request = new ApprovalRequest(nodeName, reason);
+        InterruptRequest interrupt = new InterruptRequest(
+                "approval.required:" + nodeName, request);
+        return AgentResult.interrupted(interrupt);
+    }
+
+    /**
+     * Resumes a run that was paused by an {@link ApprovalGate}, marking
+     * {@code approvedNode} as approved so the gate's default factories
+     * bypass it on the next attempt. Additional messages, if any, are
+     * appended to the context before the run continues.
+     *
+     * <p>Custom {@link ApprovalGate} implementations that ignore
+     * {@link ApprovalGate#APPROVED_KEY} must arrange their own bypass
+     * signal — the marker is only honoured by the built-in factories
+     * ({@link ApprovalGate#requireFor}, {@link ApprovalGate#when}).
+     */
+    public AgentResult resumeWithApproval(String runId, String approvedNode,
+                                          org.springframework.ai.chat.messages.Message... additional) {
+        Objects.requireNonNull(runId, "runId");
+        Objects.requireNonNull(approvedNode, "approvedNode");
+        CheckpointStore store = requireCheckpointStore();
+        Checkpoint cp = store.load(runId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No checkpoint found for runId=" + runId));
+        AgentContext context = cp.context();
+        java.util.Set<String> existing = context.get(ApprovalGate.APPROVED_KEY);
+        java.util.Set<String> merged = new java.util.LinkedHashSet<>();
+        if (existing != null) {
+            merged.addAll(existing);
+        }
+        merged.add(approvedNode);
+        context = context.with(ApprovalGate.APPROVED_KEY,
+                java.util.Collections.unmodifiableSet(merged));
+        if (additional != null && additional.length > 0) {
+            context = context.withMessages(List.of(additional));
+        }
+        return run(context, cp.nextNode(), cp.iterations(), runId, null);
+    }
+
+    /**
      * Runs the configured {@link StatePolicy} against the state updates a
      * node returned. If any update is denied, the outcome is replaced with
      * a failed {@link AgentResult} carrying a {@link StatePolicyViolation},
@@ -551,6 +624,7 @@ public final class AgentGraph implements Agent {
         @Nullable private RetryPolicy retryPolicy;
         private BudgetPolicy budgetPolicy = BudgetPolicy.NOOP;
         private StatePolicy statePolicy = StatePolicy.ALLOW_ALL;
+        private ApprovalGate approvalGate = ApprovalGate.NONE;
         private int maxIterations = 25;
         private final List<AgentListener> listeners = new ArrayList<>();
         @Nullable
@@ -619,6 +693,11 @@ public final class AgentGraph implements Agent {
 
         public Builder statePolicy(StatePolicy policy) {
             this.statePolicy = Objects.requireNonNull(policy, "policy");
+            return this;
+        }
+
+        public Builder approvalGate(ApprovalGate gate) {
+            this.approvalGate = Objects.requireNonNull(gate, "gate");
             return this;
         }
 
