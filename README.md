@@ -102,7 +102,7 @@ Distributed via [JitPack](https://jitpack.io).
 <dependency>
     <groupId>com.github.datallmhub.agentflow4j</groupId>
     <artifactId>agentflow4j-starter</artifactId>
-    <version>v0.5.0</version>
+    <version>v0.6.0</version>
 </dependency>
 ```
 
@@ -110,7 +110,7 @@ Distributed via [JitPack](https://jitpack.io).
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.5.0' }
+dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.6.0' }
 ```
 
 ### Modules
@@ -146,12 +146,13 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 
 ## 📈 Roadmap
 
-| Version | Focus |
-|---------|-------|
-| **0.5** (current) | Subgraphs, parallel fan-out, cancellation, typed output, retry/circuit-breaker/budget policies, JDBC/Redis checkpoint store, web playground |
-| **1.0** | API stabilization, documentation, community feedback |
-| **1.1** | Crew roles (CrewAI-inspired), auto-config for checkpoint backends |
-| **2.0** | OpenTelemetry tracing, MCP integration, Agent-as-Tool |
+| Version | Status | Focus |
+|---------|--------|-------|
+| **0.5** | shipped | Subgraphs, parallel fan-out, cancellation, typed output, retry/circuit-breaker/budget policies, JDBC/Redis checkpoint store, web playground |
+| **0.6** | shipped | Governed execution: `ToolPolicy`, `StatePolicy`, `ApprovalGate` (allow/deny tools, guard state writes, human-in-the-loop pause/resume) |
+| **1.0** | planned | API stabilization, documentation, community feedback |
+| **1.1** | planned | Crew roles (CrewAI-inspired), auto-config for checkpoint backends |
+| **2.0** | exploring | OpenTelemetry tracing, MCP integration, Agent-as-Tool |
 
 ---
 
