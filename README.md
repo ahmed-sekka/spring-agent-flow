@@ -69,9 +69,34 @@ Spring AI gives you agent primitives. **AgentFlow4J gives you a runtime.**
 | No durable state | Typed shared state + checkpoints |
 | Retry logic in user code | Built-in retry + circuit breaker |
 | No resume | Interrupt + resume support |
+| Agents fully trusted | **Governed execution** — tools, state writes and cost are gated |
 
 **Use it if** your agent needs multiple LLM calls, your workflow has branches or loops, failures matter, or multiple agents must coordinate.
 **Skip it if** you just call `ChatClient` once.
+
+---
+
+## 🛡 Governed by default
+
+Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in — without writing governance glue:
+
+```java
+AgentGraph.builder()
+    .addNode("assistant", assistant)
+    .addNode("payment.transfer", paymentAgent)
+    // 1. restrict which tools may run
+    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
+    // 2. protect sensitive state keys from being written
+    .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
+    // 3. cap spend per run / node / call
+    .budgetPolicy(BudgetPolicy.hierarchical(BudgetLimits.run(2.00), estimator, meter))
+    // 4. pause for a human before high-stakes nodes
+    .approvalGate(ApprovalGate.requireFor("payment.transfer"))
+    .checkpointStore(store)
+    .build();
+```
+
+Each gate is opt-in with a zero-overhead default. See [Tool policy](docs/tool-policy.md), [State policy](docs/state-policy.md), [Approval gate](docs/approval-gate.md), and [Budget policy](docs/resilience.md#6-budget-policy-cost-gate).
 
 ---
 
