@@ -81,11 +81,17 @@ Spring AI gives you agent primitives. **AgentFlow4J gives you a runtime.**
 Agents are **not implicitly trusted**. Gate what they can call, what they can change, what they can spend, and when a human must step in — without writing governance glue:
 
 ```java
+// 1. restrict which tools an agent may call (gated on the executor)
+ExecutorAgent paymentAgent = ExecutorAgent.builder()
+    .chatClient(chatClient)
+    .tools(webSearch, shellTool)
+    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
+    .build();
+
+// state, cost and approval are gated on the graph
 AgentGraph.builder()
     .addNode("assistant", assistant)
     .addNode("payment.transfer", paymentAgent)
-    // 1. restrict which tools may run
-    .toolPolicy(ToolPolicy.allowList("web.search").and(ToolPolicy.denyList("shell.execute")))
     // 2. protect sensitive state keys from being written
     .statePolicy(StatePolicy.denyWriteKeys("payment.confirmed"))
     // 3. cap spend per run / node / call
@@ -166,6 +172,8 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 - [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls
 - [Testing without an LLM](docs/testing.md) — `MockAgent` + `TestGraph`
 - [Samples](docs/samples.md) — runnable examples shipped with the repo
+
+**Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md) — governed execution end to end.
 
 ---
 
