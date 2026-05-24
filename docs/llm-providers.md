@@ -4,6 +4,35 @@ AgentFlow4J builds on top of Spring AI. Anything Spring AI auto-configures as a 
 
 The playground's `llm` bean is provider-agnostic. It receives whatever `ChatModel` Spring AI built; you decide which one.
 
+## Getting an API key
+
+Every paid provider follows the same flow: sign in to their console, create a key, export it as an environment variable. AgentFlow4J **never reads the key from a file** — it stays in your shell, out of the repo.
+
+| Provider | Console URL | Environment variable |
+|---|---|---|
+| **Mistral** | <https://console.mistral.ai/api-keys/> | `export MISTRAL_API_KEY="sk-..."` |
+| **OpenAI** | <https://platform.openai.com/api-keys> | `export OPENAI_API_KEY="sk-..."` |
+| **Anthropic** | <https://console.anthropic.com/settings/keys> | `export ANTHROPIC_API_KEY="sk-ant-..."` |
+| **Google Vertex** | <https://console.cloud.google.com/> | `gcloud auth application-default login` (no key, uses ADC) |
+| **Ollama** (local) | — | no key needed — run `ollama serve` locally |
+
+A few practical notes:
+
+- **Mistral** offers a generous free tier on `mistral-small` — enough to try the playground without spending anything.
+- **OpenAI / Anthropic** require billing setup before keys work; both have minimal-credit plans for experimentation.
+- Treat the key like a password. **Don't paste it into chat tools, screenshots or commit messages.** If you ever expose one, rotate it in the provider's console immediately.
+- The samples ship with `api-key: ${MISTRAL_API_KEY}` — Spring resolves the placeholder from your shell at startup. The key is never persisted in the repo.
+
+Once exported, run the playground in the same shell:
+
+```bash
+export MISTRAL_API_KEY="your-key"
+mvn -pl agentflow4j-samples -am exec:java \
+  -Dexec.mainClass=io.github.datallmhub.agentflow4j.samples.playground.PlaygroundDemo
+```
+
+The `llm` agent will appear in the playground dropdown, backed by the real model.
+
 ## The swap recipe
 
 For each provider, drop in the matching dependency and set the matching property. Pick one — putting multiple model starters on the same classpath is supported, but Spring AI will then need an explicit selector. For a sample, one provider at a time is the cleanest setup.
