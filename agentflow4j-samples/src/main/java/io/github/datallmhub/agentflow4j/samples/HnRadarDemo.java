@@ -16,10 +16,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
+import io.github.datallmhub.agentflow4j.core.AgentEvent;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
 import io.github.datallmhub.agentflow4j.core.StateKey;
 import io.github.datallmhub.agentflow4j.graph.AgentGraph;
 import org.springframework.ai.chat.messages.Message;
+import reactor.core.publisher.Flux;
 
 /**
  * Real-world example: a 4-node "tech radar" graph that scans Hacker News for
@@ -92,22 +94,22 @@ public final class HnRadarDemo {
                     .build();
         };
 
-        Agent synthesize = ctx -> {
-            String topic = ctx.get(TOPIC);
-            Story[] stories = ctx.get(STORIES);
-            double avg = ctx.get(AVG_POINTS);
-            StringBuilder sb = new StringBuilder()
-                    .append("**Hacker News radar — ").append(topic).append("**\n\n")
-                    .append("Average score across top ").append(stories.length)
-                    .append(" stories: **").append((int) avg).append("**\n\n");
-            if (stories.length == 0) {
-                sb.append("_No stories found._");
+        Agent synthesize = new Agent() {
+            @Override
+            public AgentResult execute(AgentContext context) {
+                return AgentResult.ofText(buildMarkdown(context));
             }
-            for (Story s : stories) {
-                sb.append("- (").append(s.points()).append(") ")
-                        .append(s.title()).append('\n');
+
+            @Override
+            public Flux<AgentEvent> executeStream(AgentContext context) {
+                String text = buildMarkdown(context);
+                List<String> chunks = tokenize(text);
+                Flux<AgentEvent> tokens = Flux.interval(Duration.ofMillis(40))
+                        .take(chunks.size())
+                        .map(i -> AgentEvent.token(chunks.get(i.intValue())));
+                return tokens.concatWith(Flux.just(
+                        AgentEvent.completed(AgentResult.ofText(text))));
             }
-            return AgentResult.ofText(sb.toString());
         };
 
         return AgentGraph.builder()
@@ -160,6 +162,46 @@ public final class HnRadarDemo {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("HN fetch failed: " + ex.getMessage(), ex);
         }
+    }
+
+    static String buildMarkdown(AgentContext ctx) {
+        String topic = ctx.get(TOPIC);
+        Story[] stories = ctx.get(STORIES);
+        Double avgBoxed = ctx.get(AVG_POINTS);
+        double avg = avgBoxed != null ? avgBoxed : 0.0;
+        StringBuilder sb = new StringBuilder()
+                .append("**Hacker News radar — ").append(topic).append("**\n\n")
+                .append("Average score across top ").append(stories.length)
+                .append(" stories: **").append((int) avg).append("**\n\n");
+        if (stories.length == 0) {
+            sb.append("_No stories found._");
+        }
+        for (Story s : stories) {
+            sb.append("- (").append(s.points()).append(") ")
+                    .append(s.title()).append('\n');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Chunk a string into word-sized tokens that preserve newlines, so the
+     * streamed synthesis renders identically to the final markdown.
+     */
+    static List<String> tokenize(String text) {
+        List<String> chunks = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            cur.append(c);
+            if (c == ' ' || c == '\n') {
+                chunks.add(cur.toString());
+                cur.setLength(0);
+            }
+        }
+        if (cur.length() > 0) {
+            chunks.add(cur.toString());
+        }
+        return chunks;
     }
 
     private static String lastUserMessage(AgentContext ctx) {
