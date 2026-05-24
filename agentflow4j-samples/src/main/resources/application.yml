@@ -1,3 +1,11 @@
+# LLM provider configuration.
+#
+# This sample ships with the Mistral starter on the classpath; the block below
+# is the Mistral-specific config. To switch to OpenAI, Anthropic (Claude),
+# Google Gemini or a local Ollama, change the spring-ai-starter-model-*
+# dependency in pom.xml and replace this block with the matching one — see
+# docs/llm-providers.md for the full table.
+
 spring:
   ai:
     mistralai:

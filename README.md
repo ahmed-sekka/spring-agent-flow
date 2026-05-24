@@ -163,6 +163,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 ## 📚 Documentation
 
 - [Two API levels (Squad + Graph)](docs/two-api-levels.md) — when to use which, with code
+- [LLM providers](docs/llm-providers.md) — swap between Mistral, OpenAI, Claude, Gemini, Ollama with two lines of config
 - [Typed state](docs/state.md) — `StateKey<T>` instead of `Map<String, Object>`
 - [Tool policy](docs/tool-policy.md) — allow/deny tool calls per agent, with argument-aware rules
 - [State policy](docs/state-policy.md) — allow/deny writes to specific `StateKey<T>`, with argument-aware rules

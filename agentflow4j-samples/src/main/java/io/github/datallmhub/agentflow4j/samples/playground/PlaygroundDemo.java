@@ -104,15 +104,18 @@ public class PlaygroundDemo {
     }
 
     /**
-     * Real LLM-backed agent. Only registered when a {@link ChatModel} bean
-     * exists in the context — Spring AI auto-configures one when
-     * {@code MISTRAL_API_KEY} (or any other provider's key) is set.
+     * Real LLM-backed agent. Provider-agnostic — Spring AI auto-configures a
+     * {@link ChatModel} from whichever {@code spring-ai-starter-model-*}
+     * dependency is on the classpath (Mistral, OpenAI, Anthropic, Gemini,
+     * Ollama, ...). See {@code docs/llm-providers.md} for the swap recipe.
+     * The bean only registers when a {@link ChatModel} is present, so the
+     * playground stays clone-and-run without credentials.
      */
     @Bean
     @ConditionalOnBean(ChatModel.class)
-    Agent mistral(ChatModel chatModel) {
+    Agent llm(ChatModel chatModel) {
         return ExecutorAgent.builder()
-                .name("mistral")
+                .name("llm")
                 .chatClient(ChatClient.builder(chatModel).build())
                 .systemPrompt("You are a concise, friendly assistant. Answer in at most 3 sentences.")
                 .build();
