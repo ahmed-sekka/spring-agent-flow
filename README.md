@@ -200,12 +200,3 @@ It is not an official Spring project.
 
 Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 Released under the [Apache 2.0 License](LICENSE).
-
----
-
-## Inspiration
-
-- [LangGraph](https://github.com/langchain-ai/langgraph) — graph-based orchestration
-- [CrewAI](https://github.com/joaomdmoura/crewai) — role-based agent teams
-- [AWS Strands](https://github.com/strands-agents/sdk-java) — agent patterns for Java
-- [Spring AI](https://github.com/spring-projects/spring-ai) — the foundation we build on
