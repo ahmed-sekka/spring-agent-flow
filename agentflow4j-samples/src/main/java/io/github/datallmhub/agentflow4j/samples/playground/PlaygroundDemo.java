@@ -6,6 +6,7 @@ import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentEvent;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
+import io.github.datallmhub.agentflow4j.samples.HnRadarDemo;
 import io.github.datallmhub.agentflow4j.samples.SupportTriageDemo;
 import io.github.datallmhub.agentflow4j.squad.ExecutorAgent;
 import org.slf4j.Logger;
@@ -88,6 +89,18 @@ public class PlaygroundDemo {
     @Bean
     Agent support() {
         return SupportTriageDemo.buildGraph(null);
+    }
+
+    /**
+     * Real-network graph: scans Hacker News for a topic and synthesises a
+     * markdown digest. The {@code search} node performs a real HTTPS call to
+     * the HN Algolia API, so the execution trace shows genuine latency rather
+     * than fake sleeps — type something like "rust" or "kubernetes" and watch
+     * the {@code search} step take its time.
+     */
+    @Bean
+    Agent radar() {
+        return HnRadarDemo.buildGraph();
     }
 
     /**
