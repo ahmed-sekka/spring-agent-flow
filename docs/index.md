@@ -1,3 +1,7 @@
+---
+description: "AgentFlow4J — a Java/Spring runtime for governed, stateful multi-agent LLM workflows on top of Spring AI. Graph execution, durable runs, and built-in tool/state/budget/approval gates."
+---
+
 # AgentFlow4J
 
 **Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**

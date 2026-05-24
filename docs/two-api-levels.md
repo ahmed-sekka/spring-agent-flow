@@ -1,3 +1,7 @@
+---
+description: "AgentFlow4J's two API levels: dynamic Squad routing for quick multi-agent setups, or explicit Graph orchestration for loops, branches and conditional edges in Spring AI."
+---
+
 # Two API levels
 
 AgentFlow4J exposes two layers. Pick the one that matches how much control you need.

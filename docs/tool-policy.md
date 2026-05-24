@@ -1,3 +1,7 @@
+---
+description: "Restrict which tools an AI agent may call in Java/Spring with AgentFlow4J. Allow-lists, deny-lists and argument-aware rules — block shell.execute before the call leaves the agent's process."
+---
+
 # Tool Policy
 
 A `ToolPolicy` is an allow/deny gate evaluated **before** an agent invokes a tool. It is the first concrete piece of the *governed execution* model: a small, dedicated SPI that you can ship without buying into a larger advisor framework.

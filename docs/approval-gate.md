@@ -1,3 +1,7 @@
+---
+description: "Human-in-the-loop pause/resume on flagged nodes for Java/Spring multi-agent workflows. Async via Slack/webhook, built on checkpoints — the workflow survives a restart while it waits."
+---
+
 # Approval Gate
 
 An `ApprovalGate` is a human-in-the-loop checkpoint evaluated **before** a node runs. It is the third piece of the *governed execution* model, alongside [`ToolPolicy`](tool-policy.md) and [`StatePolicy`](state-policy.md).

@@ -1,3 +1,7 @@
+---
+description: "Structured, replayable execution timeline per run for AgentFlow4J — node enter/exit timings, transitions, retries, and governance events (BUDGET_EXCEEDED, STATE_DENIED, APPROVAL_REQUIRED)."
+---
+
 # Run log — structured execution timeline
 
 A run log is an ordered, timestamped record of everything that happened during a graph run: which nodes ran, how long they took, transitions, and — crucially — the governance events (`BudgetPolicy`, `StatePolicy`, `ApprovalGate`). It answers the question production teams actually have: **"what did my agent do, and why?"**

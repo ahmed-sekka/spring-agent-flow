@@ -1,3 +1,7 @@
+---
+description: "Swap LLM provider in AgentFlow4J with two lines of config: Mistral, OpenAI (GPT), Anthropic Claude, Google Vertex Gemini or a local Ollama. Spring AI handles the auto-configuration; agent code stays unchanged."
+---
+
 # LLM providers — swap freely
 
 AgentFlow4J builds on top of Spring AI. Anything Spring AI auto-configures as a `ChatModel` works as the brain of an `ExecutorAgent` — Mistral, OpenAI, Anthropic Claude, Google Gemini, a local Ollama, your own. Switching is just **two changes**: the starter dependency, and the API key property.

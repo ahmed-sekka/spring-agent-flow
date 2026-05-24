@@ -1,3 +1,7 @@
+---
+description: "Guard writes to specific StateKey<T> across an AgentFlow4J multi-agent workflow. Prevent an LLM from flipping sensitive flags like payment.confirmed on its own — denials surface through the graph's error policy."
+---
+
 # State Policy
 
 A `StatePolicy` is an allow/deny gate evaluated **before** a node's state updates are applied to `AgentContext`. It is the second piece of the *governed execution* model (after `ToolPolicy`).

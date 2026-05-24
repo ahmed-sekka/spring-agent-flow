@@ -1,0 +1,49 @@
+# AgentFlow4J
+
+> AgentFlow4J is a Java/Spring open-source runtime for stateful, multi-agent LLM workflows. It sits on top of Spring AI and provides graph-based execution, durable runs (JDBC/Redis checkpoints, crash-resume), and four built-in governance gates — tool access, state writes, cost budget, and human approval. Java-first, Spring-native, code-first DSL, no sidecar and no YAML policy files.
+
+The project's value proposition: where most agent frameworks treat agents as fully trusted, AgentFlow4J treats them as **untrusted by default** and lets you compose governance into the runtime alongside orchestration, in idiomatic Java.
+
+Audience: Java/Spring developers building production multi-agent systems that need observability, durable execution, and runtime governance.
+
+License: Apache 2.0. Package: `com.github.datallmhub.agentflow4j:agentflow4j-starter` via JitPack. Compatible with Spring Boot 3.x, Spring AI 1.0+, Java 17+.
+
+## Documentation
+
+- [Home / overview](https://datallmhub.github.io/agentflow4j/): site landing with the comparison table and the 30-second quickstart
+- [Two API levels](https://datallmhub.github.io/agentflow4j/two-api-levels/): the Squad API (CoordinatorAgent + ExecutorAgent) vs the Graph API (AgentGraph with nodes and edges), when to use which
+- [LLM providers](https://datallmhub.github.io/agentflow4j/llm-providers/): how to swap between Mistral, OpenAI, Anthropic Claude, Google Vertex Gemini and a local Ollama via Spring AI starters
+- [Typed state](https://datallmhub.github.io/agentflow4j/state/): the `StateKey<T>` pattern that replaces `Map<String, Object>` for typed shared state across agents
+
+## Governance
+
+- [Tool policy](https://datallmhub.github.io/agentflow4j/tool-policy/): allow/deny lists and argument-aware rules for which tools an agent may call, denying for example `shell.execute` while permitting `web.search`
+- [State policy](https://datallmhub.github.io/agentflow4j/state-policy/): guard writes to specific `StateKey<T>` so sensitive keys like `payment.confirmed` cannot be flipped by an LLM
+- [Approval gate](https://datallmhub.github.io/agentflow4j/approval-gate/): human-in-the-loop pause/resume on flagged nodes, built on the existing checkpoint mechanism — non-blocking, async via webhook/Slack
+- [Resilience & error handling](https://datallmhub.github.io/agentflow4j/resilience/): retry policies, circuit breakers, and the `BudgetPolicy` cost gate that caps per-run / per-node / per-call spend
+
+## Runtime & observability
+
+- [Run log](https://datallmhub.github.io/agentflow4j/run-log/): structured, replayable execution timeline per run — node enter/exit, transitions, retries, governance events
+- [Observability](https://datallmhub.github.io/agentflow4j/observability/): Micrometer metrics integration for production monitoring
+- [Streaming](https://datallmhub.github.io/agentflow4j/streaming/): reactive `Flux<AgentEvent>` for token-by-token output, transitions, and tool calls
+
+## Recipes
+
+- [Durable runs](https://datallmhub.github.io/agentflow4j/recipes/durable-runs/): crash mid-workflow, resume from the last checkpoint — concrete code with `graph.invoke(ctx, runId)` and `graph.resume(runId)`
+- [Approval via Slack](https://datallmhub.github.io/agentflow4j/recipes/approval-via-slack/): a ~30-line Spring Boot wiring of `ApprovalGate` to a Slack incoming webhook, fully async, no blocked threads
+
+## Tutorials
+
+- [Stop your AI agent from burning $1000 overnight](https://datallmhub.github.io/agentflow4j/tutorials/stop-your-agent-burning-money/): end-to-end walkthrough of `BudgetPolicy`, `ToolPolicy`, `StatePolicy` and `ApprovalGate` on a refund-issuing support agent
+
+## Testing & samples
+
+- [Testing](https://datallmhub.github.io/agentflow4j/testing/): `MockAgent` and `TestGraph` for LLM-free unit testing of graph workflows
+- [Samples](https://datallmhub.github.io/agentflow4j/samples/): runnable examples shipped with the repo including `SupportTriageDemo`, `HnRadarDemo`, and a Spring Boot `PlaygroundDemo`
+
+## Source & install
+
+- Repository: [github.com/datallmhub/agentflow4j](https://github.com/datallmhub/agentflow4j)
+- Maven (JitPack): `com.github.datallmhub.agentflow4j:agentflow4j-starter:v0.6.0`
+- Modules: `agentflow4j-core`, `agentflow4j-graph`, `agentflow4j-squad`, `agentflow4j-checkpoint`, `agentflow4j-resilience4j`, `agentflow4j-starter`, `agentflow4j-playground`, `agentflow4j-cli-agents`, `agentflow4j-test`, `agentflow4j-samples`

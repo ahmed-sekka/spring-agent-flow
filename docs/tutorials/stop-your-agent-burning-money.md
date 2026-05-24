@@ -1,3 +1,7 @@
+---
+description: "Tutorial: stop your AI agent from burning $1000 overnight on a paid API or running shell.execute. End-to-end walkthrough of AgentFlow4J's four governance gates — budget, tool, state, approval — in Java/Spring."
+---
+
 # Stop your AI agent from burning $1000 overnight
 
 Most Java agent frameworks treat the agent as fully trusted: it can call any tool, mutate any state, and loop on a paid API as many times as it likes. That's fine in a demo. In production it's a money leak — and occasionally a security incident.

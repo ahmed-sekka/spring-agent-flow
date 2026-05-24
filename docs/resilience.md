@@ -1,3 +1,7 @@
+---
+description: "Production error handling for Java multi-agent workflows in AgentFlow4J: retry with backoff, circuit breakers per node, budget policy capping cost per run/node/call, and human-in-the-loop checkpoints."
+---
+
 # Resilience & Error Handling
 
 LLM-based workflows are inherently non-deterministic. Network failures, rate limits, and "hallucinations" are part of the game. `agentflow4j` provides built-in tools to handle these gracefully.
