@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title th:text="${title}">agentflow4j playground</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/cytoscape@3.30.2/dist/cytoscape.min.js"></script>
 </head>
 <body class="h-screen bg-slate-950 text-slate-100">
 <div class="h-full flex flex-col max-w-6xl mx-auto p-6">
@@ -28,7 +29,7 @@
         <span id="status" class="text-xs text-slate-500 ml-auto"></span>
     </div>
 
-    <!-- two columns: chat (left) + trace (right) -->
+    <!-- two columns: chat (left) + runtime console (right: graph + trace) -->
     <div class="flex-1 flex gap-4 min-h-0">
         <div class="flex-1 flex flex-col min-h-0">
             <div id="chat"
@@ -45,14 +46,22 @@
             </form>
         </div>
 
-        <aside class="w-80 flex flex-col min-h-0">
-            <div class="text-xs uppercase text-slate-400 tracking-wider mb-2 flex items-center justify-between">
-                <span>Execution trace</span>
-                <span id="trace-elapsed" class="text-slate-600 normal-case"></span>
+        <aside class="w-96 flex flex-col min-h-0 gap-3">
+            <!-- live workflow graph -->
+            <div class="flex flex-col" style="height: 55%;">
+                <div class="text-xs uppercase text-slate-400 tracking-wider mb-2">Workflow graph</div>
+                <div id="graph" class="flex-1 bg-slate-900 border border-slate-800 rounded"></div>
             </div>
-            <div id="trace"
-                 class="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded p-3 space-y-1 text-xs font-mono">
-                <div class="text-slate-600">Run an agent to see its execution path.</div>
+            <!-- execution trace timeline -->
+            <div class="flex flex-col min-h-0" style="height: 45%;">
+                <div class="text-xs uppercase text-slate-400 tracking-wider mb-2 flex items-center justify-between">
+                    <span>Execution trace</span>
+                    <span id="trace-elapsed" class="text-slate-600 normal-case"></span>
+                </div>
+                <div id="trace"
+                     class="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded p-3 space-y-1 text-xs font-mono">
+                    <div class="text-slate-600">Run an agent to see its execution path.</div>
+                </div>
             </div>
         </aside>
     </div>
@@ -67,10 +76,11 @@
     const trace = document.getElementById('trace');
     const traceElapsed = document.getElementById('trace-elapsed');
 
+    resetAgentInput.value = agentSelect.value || '';
     agentSelect.addEventListener('change', () => {
         resetAgentInput.value = agentSelect.value;
+        loadGraph(agentSelect.value);
     });
-    resetAgentInput.value = agentSelect.value || '';
 
     function bubble(role, text) {
         const wrap = document.createElement('div');
@@ -86,9 +96,76 @@
         return b;
     }
 
+    // ----- Workflow graph (Cytoscape) -----
+    let cy = null;
+    let entryNode = null;
+
+    const NODE_COLORS = {
+        idle:    '#475569',  // slate-600
+        running: '#6366f1',  // indigo-500
+        done:    '#22c55e',  // green-500
+        error:   '#ef4444',  // red-500
+        waiting: '#f59e0b'   // amber-500
+    };
+
+    async function loadGraph(agent) {
+        if (!agent) return;
+        try {
+            const topo = await fetch('/playground/api/graph?agent=' + encodeURIComponent(agent))
+                .then(r => r.json());
+            entryNode = topo.entry;
+            const elements = [];
+            topo.nodes.forEach(n => elements.push({ data: { id: n.id, label: n.id }, classes: 'idle' }));
+            topo.edges.forEach((e, i) => elements.push({
+                data: { id: 'e' + i, source: e.from, target: e.to }
+            }));
+            if (cy) cy.destroy();
+            cy = cytoscape({
+                container: document.getElementById('graph'),
+                elements,
+                style: [
+                    { selector: 'node', style: {
+                        'label': 'data(label)', 'color': '#e2e8f0', 'font-size': 11,
+                        'text-valign': 'center', 'text-halign': 'center',
+                        'background-color': NODE_COLORS.idle, 'width': 'label', 'height': 22,
+                        'padding': '8px', 'shape': 'round-rectangle', 'text-wrap': 'wrap'
+                    }},
+                    { selector: 'edge', style: {
+                        'width': 1.5, 'line-color': '#334155',
+                        'target-arrow-color': '#334155', 'target-arrow-shape': 'triangle',
+                        'curve-style': 'bezier'
+                    }},
+                    { selector: '.idle',    style: { 'background-color': NODE_COLORS.idle } },
+                    { selector: '.running', style: { 'background-color': NODE_COLORS.running } },
+                    { selector: '.done',    style: { 'background-color': NODE_COLORS.done } },
+                    { selector: '.error',   style: { 'background-color': NODE_COLORS.error } },
+                    { selector: '.waiting', style: { 'background-color': NODE_COLORS.waiting } }
+                ],
+                layout: { name: 'breadthfirst', directed: true, padding: 12, spacingFactor: 0.9,
+                          roots: entryNode ? '#' + cssEscape(entryNode) : undefined }
+            });
+        } catch (e) {
+            // graph view is best-effort; ignore failures
+        }
+    }
+
+    function cssEscape(id) { return id.replace(/[^a-zA-Z0-9_-]/g, '\\$&'); }
+
+    function graphSetState(node, state) {
+        if (!cy) return;
+        const n = cy.getElementById(node);
+        if (n.length === 0) return;
+        n.removeClass('idle running done error waiting').addClass(state);
+    }
+
+    function graphResetStates() {
+        if (!cy) return;
+        cy.nodes().removeClass('running done error waiting').addClass('idle');
+    }
+
     // ----- Trace panel -----
     let runStart = 0;
-    const nodeRows = {};   // node name -> {dot, label}
+    const nodeRows = {};
 
     function traceClear() {
         trace.innerHTML = '';
@@ -114,7 +191,6 @@
 
     function traceNode(node) {
         if (nodeRows[node]) return nodeRows[node];
-        // mark the previously active node as done
         for (const k in nodeRows) {
             if (nodeRows[k].active) {
                 nodeRows[k].active = false;
@@ -128,9 +204,7 @@
         return r;
     }
 
-    function traceTool(name) {
-        traceRow('🔧', 'text-amber-400', 'tool', name);
-    }
+    function traceTool(name) { traceRow('🔧', 'text-amber-400', 'tool', name); }
 
     function traceFinish(symbol, color, label) {
         for (const k in nodeRows) {
@@ -156,10 +230,11 @@
         sendBtn.disabled = true;
         status.textContent = '…';
 
-        // start a fresh trace for this turn
         traceClear();
         runStart = performance.now();
         traceRow('▸', 'text-slate-400', agent, 'started');
+        graphResetStates();
+        if (entryNode) graphSetState(entryNode, 'running');
 
         const url = '/playground/api/chat'
             + '?agent=' + encodeURIComponent(agent)
@@ -167,19 +242,20 @@
         const es = new EventSource(url);
 
         let buffer = '';
-        let sawNode = false;
+        let lastNode = entryNode;
         es.addEventListener('token', ev => {
             buffer += ev.data;
             assistant.textContent = buffer;
             chat.scrollTop = chat.scrollHeight;
         });
         es.addEventListener('transition', ev => {
-            // data is "from→to"
             const parts = ev.data.split('→');
             if (parts.length === 2) {
-                traceNode(parts[0]);   // ensure source node shown/done
-                traceNode(parts[1]);   // activate target
-                sawNode = true;
+                traceNode(parts[0]);
+                traceNode(parts[1]);
+                graphSetState(parts[0], 'done');
+                graphSetState(parts[1], 'running');
+                lastNode = parts[1];
             }
             status.textContent = ev.data;
         });
@@ -191,10 +267,9 @@
             status.textContent = 'tool done: ' + ev.data;
         });
         es.addEventListener('completed', ev => {
-            if (buffer.length === 0 && ev.data) {
-                assistant.textContent = ev.data;
-            }
+            if (buffer.length === 0 && ev.data) assistant.textContent = ev.data;
             traceFinish('■', 'text-green-400', 'completed');
+            if (lastNode) graphSetState(lastNode, 'done');
             status.textContent = 'ok';
             sendBtn.disabled = false;
             es.close();
@@ -202,6 +277,7 @@
         es.addEventListener('error', ev => {
             assistant.textContent = ev.data ? '⚠ ' + ev.data : '⚠ connection error';
             traceFinish('✕', 'text-red-400', 'error');
+            if (lastNode) graphSetState(lastNode, 'error');
             status.textContent = 'error';
             sendBtn.disabled = false;
             es.close();
@@ -214,7 +290,11 @@
         status.textContent = '';
         traceClear();
         trace.innerHTML = '<div class="text-slate-600">Run an agent to see its execution path.</div>';
+        graphResetStates();
     }
+
+    // initial graph for the pre-selected agent
+    loadGraph(agentSelect.value);
 </script>
 </body>
 </html>

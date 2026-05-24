@@ -83,6 +83,25 @@ public final class AgentGraph implements Agent {
         return name;
     }
 
+    /** The entry node the graph starts from. */
+    public String entryNode() {
+        return entryNode;
+    }
+
+    /** Node names declared in this graph, for introspection / visualization. */
+    public java.util.Set<String> nodeNames() {
+        return nodes.keySet();
+    }
+
+    /**
+     * The edges of this graph, for introspection / visualization. The returned
+     * list is immutable; edge predicates are not exposed beyond {@code from()}
+     * / {@code to()}.
+     */
+    public List<Edge> edges() {
+        return edges;
+    }
+
     public AgentResult invoke(AgentContext initial) {
         Objects.requireNonNull(initial, "initial");
         return run(initial, entryNode, 0, null, null);

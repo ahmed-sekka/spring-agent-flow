@@ -5,10 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import java.util.ArrayList;
+
 import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentEvent;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
+import io.github.datallmhub.agentflow4j.graph.AgentGraph;
+import io.github.datallmhub.agentflow4j.graph.Edge;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import org.springframework.web.servlet.view.RedirectView;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -42,6 +47,40 @@ class PlaygroundController {
         model.addAttribute("title", properties.getTitle());
         model.addAttribute("agents", agentNames);
         return "playground/index";
+    }
+
+    /**
+     * Returns the topology of the selected agent for the graph view. For an
+     * {@link AgentGraph} it's the real node/edge structure; for a flat agent
+     * it's a single node. Edges carry only from/to/type — no predicates.
+     */
+    @GetMapping(path = "/api/graph", produces = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseBody
+    Map<String, Object> graph(@RequestParam("agent") String agentName) {
+        Agent agent = agents.get(agentName);
+        if (agent instanceof AgentGraph g) {
+            List<Map<String, Object>> nodes = new ArrayList<>();
+            for (String n : g.nodeNames()) {
+                nodes.add(Map.of("id", n, "entry", n.equals(g.entryNode())));
+            }
+            List<Map<String, Object>> edges = new ArrayList<>();
+            for (Edge e : g.edges()) {
+                edges.add(Map.of("from", e.from(), "to", e.to(),
+                        "type", edgeType(e)));
+            }
+            return Map.of("kind", "graph", "entry", g.entryNode(),
+                    "nodes", nodes, "edges", edges);
+        }
+        // flat agent: a single node
+        return Map.of("kind", "flat", "entry", agentName,
+                "nodes", List.of(Map.of("id", agentName, "entry", true)),
+                "edges", List.of());
+    }
+
+    private static String edgeType(Edge e) {
+        if (e instanceof Edge.Conditional) return "conditional";
+        if (e instanceof Edge.OnResult) return "onResult";
+        return "direct";
     }
 
     @GetMapping(path = "/api/chat", produces = MediaType.TEXT_EVENT_STREAM_VALUE)

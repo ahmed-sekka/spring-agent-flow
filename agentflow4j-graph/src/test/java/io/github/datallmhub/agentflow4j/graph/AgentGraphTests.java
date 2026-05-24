@@ -332,4 +332,26 @@ class AgentGraphTests {
         AgentResult result = graph.invoke(AgentContext.empty());
         assertThat(result.text()).isEqualTo("shipped");
     }
+
+    @Test
+    void exposesTopologyForIntrospection() {
+        Agent a = ctx -> AgentResult.ofText("a");
+        Agent b = ctx -> AgentResult.ofText("b");
+        Agent c = ctx -> AgentResult.ofText("c");
+
+        AgentGraph graph = AgentGraph.builder()
+                .addNode("a", a)
+                .addNode("b", b)
+                .addNode("c", c)
+                .addEdge("a", "b")
+                .addEdge(Edge.conditional("b", ctx -> true, "c"))
+                .build();
+
+        assertThat(graph.entryNode()).isEqualTo("a");
+        assertThat(graph.nodeNames()).containsExactlyInAnyOrder("a", "b", "c");
+        assertThat(graph.edges()).hasSize(2);
+        assertThat(graph.edges().get(0).from()).isEqualTo("a");
+        assertThat(graph.edges().get(0).to()).isEqualTo("b");
+        assertThat(graph.edges().get(1)).isInstanceOf(Edge.Conditional.class);
+    }
 }
