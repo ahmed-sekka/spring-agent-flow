@@ -1,6 +1,6 @@
 # AgentFlow4J
 
-**Build stateful multi-agent workflows in Java — with graphs, retries, and persistence.**
+**Build governed, stateful AI workflows in Java — with orchestration, persistence, and runtime observability.**
 
 <p align="center">
 <img width="250" height="400" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
