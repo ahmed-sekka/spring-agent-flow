@@ -40,8 +40,9 @@ theme:
   font:
     text: Inter
     code: JetBrains Mono
+  logo: images/agentflow4j.png
+  favicon: images/agentflow4j.png
   icon:
-    logo: material/graph-outline
     repo: fontawesome/brands/github
 
 markdown_extensions:
