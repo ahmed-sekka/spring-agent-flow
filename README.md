@@ -169,6 +169,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 - [Approval gate](docs/approval-gate.md) — human-in-the-loop pause/resume on sensitive nodes
   - [Recipe: approval via Slack](docs/recipes/approval-via-slack.md) — async, non-blocking, ~30 lines
 - [Resilience & error handling](docs/resilience.md) — retries, circuit breaker, budget policy
+  - [Recipe: durable runs](docs/recipes/durable-runs.md) — crash mid-workflow, resume from the last checkpoint
 - [Observability](docs/observability.md) — Micrometer metrics, tags, listeners
 - [Run log](docs/run-log.md) — structured, replayable execution timeline per run
 - [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls
