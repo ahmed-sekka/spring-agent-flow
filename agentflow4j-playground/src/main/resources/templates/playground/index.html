@@ -6,7 +6,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="h-screen bg-slate-950 text-slate-100">
-<div class="h-full flex flex-col max-w-3xl mx-auto p-6">
+<div class="h-full flex flex-col max-w-6xl mx-auto p-6">
     <header class="flex items-center justify-between mb-4">
         <h1 class="text-xl font-semibold tracking-tight" th:text="${title}">agentflow4j playground</h1>
         <form th:action="@{/playground/api/reset}" method="post"
@@ -28,19 +28,34 @@
         <span id="status" class="text-xs text-slate-500 ml-auto"></span>
     </div>
 
-    <div id="chat"
-         class="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded p-4 space-y-3 text-sm">
-    </div>
+    <!-- two columns: chat (left) + trace (right) -->
+    <div class="flex-1 flex gap-4 min-h-0">
+        <div class="flex-1 flex flex-col min-h-0">
+            <div id="chat"
+                 class="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded p-4 space-y-3 text-sm">
+            </div>
+            <form id="form" class="mt-3 flex gap-2" onsubmit="return send(event)">
+                <input id="message" autocomplete="off" autofocus
+                       placeholder="Ask the selected agent..."
+                       class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                <button id="send"
+                        class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium px-4 rounded">
+                    Send
+                </button>
+            </form>
+        </div>
 
-    <form id="form" class="mt-3 flex gap-2" onsubmit="return send(event)">
-        <input id="message" autocomplete="off" autofocus
-               placeholder="Ask the selected agent..."
-               class="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
-        <button id="send"
-                class="bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-sm font-medium px-4 rounded">
-            Send
-        </button>
-    </form>
+        <aside class="w-80 flex flex-col min-h-0">
+            <div class="text-xs uppercase text-slate-400 tracking-wider mb-2 flex items-center justify-between">
+                <span>Execution trace</span>
+                <span id="trace-elapsed" class="text-slate-600 normal-case"></span>
+            </div>
+            <div id="trace"
+                 class="flex-1 overflow-y-auto bg-slate-900 border border-slate-800 rounded p-3 space-y-1 text-xs font-mono">
+                <div class="text-slate-600">Run an agent to see its execution path.</div>
+            </div>
+        </aside>
+    </div>
 </div>
 
 <script>
@@ -49,6 +64,8 @@
     const sendBtn = document.getElementById('send');
     const agentSelect = document.getElementById('agent');
     const resetAgentInput = document.getElementById('reset-agent');
+    const trace = document.getElementById('trace');
+    const traceElapsed = document.getElementById('trace-elapsed');
 
     agentSelect.addEventListener('change', () => {
         resetAgentInput.value = agentSelect.value;
@@ -57,9 +74,7 @@
 
     function bubble(role, text) {
         const wrap = document.createElement('div');
-        wrap.className = role === 'user'
-            ? 'flex justify-end'
-            : 'flex justify-start';
+        wrap.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
         const b = document.createElement('div');
         b.className = role === 'user'
             ? 'bg-indigo-600 text-white rounded-lg px-3 py-2 max-w-[80%] whitespace-pre-wrap'
@@ -69,6 +84,63 @@
         chat.appendChild(wrap);
         chat.scrollTop = chat.scrollHeight;
         return b;
+    }
+
+    // ----- Trace panel -----
+    let runStart = 0;
+    const nodeRows = {};   // node name -> {dot, label}
+
+    function traceClear() {
+        trace.innerHTML = '';
+        traceElapsed.textContent = '';
+        for (const k in nodeRows) delete nodeRows[k];
+    }
+
+    function traceRow(symbol, color, label, detail) {
+        const row = document.createElement('div');
+        row.className = 'flex items-start gap-2';
+        const dot = document.createElement('span');
+        dot.className = color + ' w-4 shrink-0 text-center';
+        dot.textContent = symbol;
+        const txt = document.createElement('span');
+        txt.className = 'flex-1';
+        txt.textContent = label + (detail ? '  ' + detail : '');
+        row.appendChild(dot);
+        row.appendChild(txt);
+        trace.appendChild(row);
+        trace.scrollTop = trace.scrollHeight;
+        return { dot, txt };
+    }
+
+    function traceNode(node) {
+        if (nodeRows[node]) return nodeRows[node];
+        // mark the previously active node as done
+        for (const k in nodeRows) {
+            if (nodeRows[k].active) {
+                nodeRows[k].active = false;
+                nodeRows[k].dot.textContent = '✓';
+                nodeRows[k].dot.className = 'text-green-400 w-4 shrink-0 text-center';
+            }
+        }
+        const r = traceRow('●', 'text-indigo-400 w-4 shrink-0 text-center animate-pulse', node, '');
+        r.active = true;
+        nodeRows[node] = r;
+        return r;
+    }
+
+    function traceTool(name) {
+        traceRow('🔧', 'text-amber-400', 'tool', name);
+    }
+
+    function traceFinish(symbol, color, label) {
+        for (const k in nodeRows) {
+            if (nodeRows[k].active) {
+                nodeRows[k].active = false;
+                nodeRows[k].dot.textContent = '✓';
+                nodeRows[k].dot.className = 'text-green-400 w-4 shrink-0 text-center';
+            }
+        }
+        traceRow(symbol, color, label, ((performance.now() - runStart) | 0) + 'ms');
     }
 
     function send(e) {
@@ -84,40 +156,55 @@
         sendBtn.disabled = true;
         status.textContent = '…';
 
+        // start a fresh trace for this turn
+        traceClear();
+        runStart = performance.now();
+        traceRow('▸', 'text-slate-400', agent, 'started');
+
         const url = '/playground/api/chat'
             + '?agent=' + encodeURIComponent(agent)
             + '&message=' + encodeURIComponent(text);
         const es = new EventSource(url);
 
         let buffer = '';
+        let sawNode = false;
         es.addEventListener('token', ev => {
             buffer += ev.data;
             assistant.textContent = buffer;
             chat.scrollTop = chat.scrollHeight;
         });
+        es.addEventListener('transition', ev => {
+            // data is "from→to"
+            const parts = ev.data.split('→');
+            if (parts.length === 2) {
+                traceNode(parts[0]);   // ensure source node shown/done
+                traceNode(parts[1]);   // activate target
+                sawNode = true;
+            }
+            status.textContent = ev.data;
+        });
+        es.addEventListener('tool', ev => {
+            traceTool(ev.data);
+            status.textContent = 'tool: ' + ev.data;
+        });
+        es.addEventListener('tool-end', ev => {
+            status.textContent = 'tool done: ' + ev.data;
+        });
         es.addEventListener('completed', ev => {
             if (buffer.length === 0 && ev.data) {
                 assistant.textContent = ev.data;
             }
+            traceFinish('■', 'text-green-400', 'completed');
             status.textContent = 'ok';
             sendBtn.disabled = false;
             es.close();
         });
         es.addEventListener('error', ev => {
-            if (ev.data) {
-                assistant.textContent = '⚠ ' + ev.data;
-            } else {
-                assistant.textContent = '⚠ connection error';
-            }
+            assistant.textContent = ev.data ? '⚠ ' + ev.data : '⚠ connection error';
+            traceFinish('✕', 'text-red-400', 'error');
             status.textContent = 'error';
             sendBtn.disabled = false;
             es.close();
-        });
-        es.addEventListener('tool', ev => {
-            status.textContent = 'tool: ' + ev.data;
-        });
-        es.addEventListener('transition', ev => {
-            status.textContent = ev.data;
         });
         return false;
     }
@@ -125,6 +212,8 @@
     function resetUI() {
         chat.innerHTML = '';
         status.textContent = '';
+        traceClear();
+        trace.innerHTML = '<div class="text-slate-600">Run an agent to see its execution path.</div>';
     }
 </script>
 </body>

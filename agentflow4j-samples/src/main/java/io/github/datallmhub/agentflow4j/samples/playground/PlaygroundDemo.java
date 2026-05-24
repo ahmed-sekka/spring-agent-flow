@@ -6,6 +6,7 @@ import io.github.datallmhub.agentflow4j.core.Agent;
 import io.github.datallmhub.agentflow4j.core.AgentContext;
 import io.github.datallmhub.agentflow4j.core.AgentEvent;
 import io.github.datallmhub.agentflow4j.core.AgentResult;
+import io.github.datallmhub.agentflow4j.samples.SupportTriageDemo;
 import io.github.datallmhub.agentflow4j.squad.ExecutorAgent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +77,17 @@ public class PlaygroundDemo {
                 return tokens.concatWith(Flux.just(AgentEvent.completed(AgentResult.ofText(reply))));
             }
         };
+    }
+
+    /**
+     * Multi-node graph agent — a customer-support ticket flowing through
+     * triage → specialist → policy → reply. Runs in deterministic stub mode
+     * (no API key) so the Trace panel always shows a rich, reproducible
+     * node path. This is the agent that best showcases the execution trace.
+     */
+    @Bean
+    Agent support() {
+        return SupportTriageDemo.buildGraph(null);
     }
 
     /**

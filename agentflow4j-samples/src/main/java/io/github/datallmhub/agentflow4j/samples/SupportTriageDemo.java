@@ -62,7 +62,7 @@ public class SupportTriageDemo {
         System.out.println("─".repeat(60));
     }
 
-    static AgentGraph buildGraph(@Nullable ChatClient chat) {
+    public static AgentGraph buildGraph(@Nullable ChatClient chat) {
         boolean live = chat != null;
 
         Agent triage    = live ? llmTriage(chat)                                                   : stubTriage();
