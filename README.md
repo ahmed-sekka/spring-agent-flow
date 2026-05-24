@@ -1,12 +1,12 @@
 # AgentFlow4J
 
-**Build governed, stateful AI workflows in Java — with orchestration, persistence, and runtime observability.**
+**Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**
 
 <p align="center">
 <img width="250" height="400" alt="agents" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
 </p>
 
-No orchestration code. No glue logic. Just define your agents and run.
+No orchestration boilerplate. No hidden execution. Just define your agents and run.
 
 [![build](https://github.com/datallmhub/agentflow4j/actions/workflows/build.yml/badge.svg)](https://github.com/datallmhub/agentflow4j/actions)
 [![Java 17+](https://img.shields.io/badge/Java-17%2B-blue)](https://adoptium.net/)
@@ -58,18 +58,16 @@ A multi-step, stateful workflow with routing, coordination, and resilience — w
 
 ## 🧠 Why AgentFlow4J?
 
-Real-world AI systems are **multi-step**, **stateful**, **failure-prone**, and **long-running**.
+Spring AI gives you LLM primitives (`ChatClient`, tools). **AgentFlow4J gives you a structured runtime for multi-step systems.** Going from single prompts to multi-agent workflows makes execution stateful, failure-prone, and hard to inspect. AgentFlow4J provides the execution graph, durable state, and governance gates to run those workflows safely — all in idiomatic Java, no sidecar, no YAML.
 
-Spring AI gives you agent primitives. **AgentFlow4J gives you a runtime.**
-
-| Spring AI | AgentFlow4J |
+| Spring AI | AgentFlow4J runtime |
 |---|---|
-| Primitives (`ChatClient`, tools) | Structured runtime (`AgentGraph`, `CoordinatorAgent`) |
-| Manual orchestration | Graph-based execution |
-| No durable state | Typed shared state + checkpoints |
-| Retry logic in user code | Built-in retry + circuit breaker |
-| No resume | Interrupt + resume support |
-| Agents fully trusted | **Governed execution** — tools, state writes and cost are gated |
+| Primitives (`ChatClient`, tools) | Structured execution (`AgentGraph`, `CoordinatorAgent`) |
+| Manual orchestration glue | Graph-based execution & dynamic routing |
+| No durable state | Typed shared state (`StateKey<T>`) + checkpoints |
+| Retry logic in user code | Built-in retry & circuit-breaker policies |
+| No resume | Interrupt & resume from the last valid checkpoint |
+| Agents fully trusted | Governed execution — tool, state-write and budget gates |
 
 **Use it if** your agent needs multiple LLM calls, your workflow has branches or loops, failures matter, or multiple agents must coordinate.
 **Skip it if** you just call `ChatClient` once.
