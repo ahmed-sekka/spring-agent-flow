@@ -1,0 +1,93 @@
+site_name: AgentFlow4J
+site_description: Java/Spring runtime for governed multi-agent LLM workflows — orchestration, durable runs, runtime observability.
+site_url: https://datallmhub.github.io/agentflow4j/
+site_author: agentflow4j
+
+repo_url: https://github.com/datallmhub/agentflow4j
+repo_name: datallmhub/agentflow4j
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Get started:
+      - Two API levels: two-api-levels.md
+      - LLM providers: llm-providers.md
+      - Typed state: state.md
+  - Governance:
+      - Tool policy: tool-policy.md
+      - State policy: state-policy.md
+      - Approval gate: approval-gate.md
+  - Resilience & runtime:
+      - Resilience & error handling: resilience.md
+      - Run log: run-log.md
+      - Observability: observability.md
+      - Streaming: streaming.md
+  - Recipes:
+      - Approval via Slack: recipes/approval-via-slack.md
+      - Durable runs: recipes/durable-runs.md
+  - Tutorials:
+      - "Stop your agent burning $1000 overnight": tutorials/stop-your-agent-burning-money.md
+  - Testing: testing.md
+  - Samples: samples.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/datallmhub/agentflow4j
