@@ -38,6 +38,8 @@ public final class AgentGraph implements Agent {
     private final List<AgentListener> listeners;
     @Nullable
     private final CheckpointStore checkpointStore;
+    @Nullable
+    private final RunLogStore runLogStore;
 
     private AgentGraph(Builder b) {
         this.name = b.name;
@@ -54,6 +56,7 @@ public final class AgentGraph implements Agent {
         this.maxIterations = b.maxIterations;
         this.listeners = List.copyOf(b.listeners);
         this.checkpointStore = b.checkpointStore;
+        this.runLogStore = b.runLogStore;
 
         validate();
     }
@@ -102,11 +105,19 @@ public final class AgentGraph implements Agent {
         return invokeStream(context);
     }
 
+    /**
+     * Runs the graph under an explicit {@code runId}. The id identifies the
+     * run for both checkpointing (if a {@link CheckpointStore} is configured)
+     * and the {@link RunLogStore} (if one is configured). Neither is required:
+     * with neither store, this behaves like {@link #invoke(AgentContext)} but
+     * with a caller-chosen id usable to query {@link #runLog(String)}.
+     */
     public AgentResult invoke(AgentContext initial, String runId) {
         Objects.requireNonNull(initial, "initial");
         Objects.requireNonNull(runId, "runId");
-        CheckpointStore store = requireCheckpointStore();
-        store.save(new Checkpoint(runId, entryNode, initial, 0, null));
+        if (checkpointStore != null) {
+            checkpointStore.save(new Checkpoint(runId, entryNode, initial, 0, null));
+        }
         return run(initial, entryNode, 0, runId, null);
     }
 
@@ -139,11 +150,14 @@ public final class AgentGraph implements Agent {
         AgentResult lastResult = null;
         int iterations = startIterations;
         CheckpointStore store = checkpointStore;
+        RunRecorder recorder = RunRecorder.forRun(
+                runId != null ? runId : java.util.UUID.randomUUID().toString(), runLogStore);
 
         while (currentNode != null) {
             if (Thread.currentThread().isInterrupted()) {
                 AgentError err = AgentError.of(currentNode,
                         new InterruptedException("Graph execution interrupted"));
+                recorder.error(currentNode, "interrupted");
                 notifyError(currentNode, err);
                 return AgentResult.failed(err);
             }
@@ -151,37 +165,50 @@ public final class AgentGraph implements Agent {
                 AgentError err = AgentError.of(currentNode,
                         new java.util.concurrent.TimeoutException(
                                 "Graph exceeded timeout before entering node '" + currentNode + "'"));
+                recorder.error(currentNode, "timeout");
                 notifyError(currentNode, err);
                 return AgentResult.failed(err);
             }
             if (++iterations > maxIterations) {
                 AgentError err = AgentError.of(currentNode,
                         new IllegalStateException("Max iterations exceeded: " + maxIterations));
+                recorder.error(currentNode, "max iterations exceeded");
                 notifyError(currentNode, err);
                 return AgentResult.failed(err);
             }
 
             Node node = nodes.get(currentNode);
+            recorder.enter(currentNode);
             notifyEnter(currentNode, context);
 
             AgentResult approvalInterrupt = gateApproval(currentNode, context);
             if (approvalInterrupt != null) {
+                recorder.approvalRequired(currentNode, approvalInterrupt.interrupt().reason());
                 if (runId != null && store != null) {
                     store.save(new Checkpoint(runId, currentNode, context,
                             iterations - 1, approvalInterrupt.interrupt()));
                 }
                 notifyExit(currentNode, approvalInterrupt, 0L);
+                recorder.complete("approval required at " + currentNode);
                 notifyGraphComplete(approvalInterrupt);
                 return approvalInterrupt;
             }
 
             NodeOutcome outcome = executeWithPolicy(node, context);
             outcome = enforceStatePolicy(currentNode, outcome);
+            recorder.exit(currentNode, outcome.durationNanos);
             notifyExit(currentNode, outcome.result, outcome.durationNanos);
 
             if (outcome.result.hasError()) {
-                notifyError(currentNode, outcome.result.error());
+                AgentError err = outcome.result.error();
+                if (err != null && err.cause() instanceof StatePolicyViolation spv) {
+                    recorder.stateDenied(currentNode, spv.reason());
+                } else {
+                    recorder.error(currentNode, errorMessage(err));
+                }
+                notifyError(currentNode, err);
                 if (errorPolicy == ErrorPolicy.FAIL_FAST) {
+                    recorder.complete("failed at " + currentNode);
                     notifyGraphComplete(outcome.result);
                     return outcome.result;
                 }
@@ -193,10 +220,15 @@ public final class AgentGraph implements Agent {
             }
 
             if (outcome.result.isInterrupted()) {
+                String reason = outcome.result.interrupt().reason();
+                if (reason.startsWith("budget.exceeded")) {
+                    recorder.budgetExceeded(currentNode, reason);
+                }
                 if (runId != null && store != null) {
                     store.save(new Checkpoint(runId, currentNode, context,
                             iterations - 1, outcome.result.interrupt()));
                 }
+                recorder.complete("interrupted at " + currentNode + ": " + reason);
                 notifyGraphComplete(outcome.result);
                 return outcome.result;
             }
@@ -213,14 +245,37 @@ public final class AgentGraph implements Agent {
             }
 
             if (next != null) {
+                recorder.transition(currentNode, next);
                 notifyTransition(currentNode, next);
             }
             currentNode = next;
         }
 
         AgentResult finalResult = lastResult != null ? lastResult : AgentResult.ofText(null);
+        recorder.complete("completed");
         notifyGraphComplete(finalResult);
         return finalResult;
+    }
+
+    private static String errorMessage(@Nullable AgentError error) {
+        if (error == null) {
+            return "error";
+        }
+        Throwable cause = error.cause();
+        if (cause == null) {
+            return "error";
+        }
+        String msg = cause.getMessage();
+        return msg != null ? msg : cause.getClass().getSimpleName();
+    }
+
+    /**
+     * Returns the recorded execution log for {@code runId}, or an empty list
+     * when no {@link RunLogStore} is configured or the run is unknown.
+     */
+    public List<AgentRunEvent> runLog(String runId) {
+        Objects.requireNonNull(runId, "runId");
+        return runLogStore == null ? List.of() : runLogStore.events(runId);
     }
 
     public Flux<AgentEvent> invokeStream(AgentContext initial) {
@@ -228,6 +283,8 @@ public final class AgentGraph implements Agent {
         // on the subscriber's thread. subscribeOn(boundedElastic) ensures that thread
         // is always blocking-capable, even when the caller is a Netty/WebFlux event loop.
         return Flux.<AgentEvent>create(sink -> {
+            RunRecorder recorder = RunRecorder.forRun(
+                    java.util.UUID.randomUUID().toString(), runLogStore);
             try {
                 log.info("graph.start: graph={}", name);
                 AgentContext context = initial;
@@ -240,25 +297,32 @@ public final class AgentGraph implements Agent {
                     if (++iterations > maxIterations) {
                         AgentError err = AgentError.of(currentNode,
                                 new IllegalStateException("Max iterations exceeded: " + maxIterations));
+                        recorder.error(currentNode, "max iterations exceeded");
+                        recorder.complete("failed at " + currentNode);
                         sink.next(AgentEvent.completed(AgentResult.failed(err)));
                         sink.complete();
                         return;
                     }
 
                     if (previousNode != null) {
+                        recorder.transition(previousNode, currentNode);
                         sink.next(AgentEvent.transition(previousNode, currentNode));
                         notifyTransition(previousNode, currentNode);
                     }
 
                     Node node = nodes.get(currentNode);
+                    recorder.enter(currentNode);
                     notifyEnter(currentNode, context);
 
                     NodeOutcome outcome = streamNodeWithPolicy(node, context, sink);
+                    recorder.exit(currentNode, outcome.durationNanos);
                     notifyExit(currentNode, outcome.result, outcome.durationNanos);
 
                     if (outcome.result.hasError()) {
+                        recorder.error(currentNode, errorMessage(outcome.result.error()));
                         notifyError(currentNode, outcome.result.error());
                         if (errorPolicy == ErrorPolicy.FAIL_FAST) {
+                            recorder.complete("failed at " + currentNode);
                             sink.next(AgentEvent.completed(outcome.result));
                             sink.complete();
                             return;
@@ -275,6 +339,7 @@ public final class AgentGraph implements Agent {
                 }
 
                 AgentResult finalResult = lastResult != null ? lastResult : AgentResult.ofText(null);
+                recorder.complete("completed");
                 notifyGraphComplete(finalResult);
                 sink.next(AgentEvent.completed(finalResult));
                 sink.complete();
@@ -629,6 +694,8 @@ public final class AgentGraph implements Agent {
         private final List<AgentListener> listeners = new ArrayList<>();
         @Nullable
         private CheckpointStore checkpointStore;
+        @Nullable
+        private RunLogStore runLogStore;
 
         public Builder name(String name) {
             this.name = Objects.requireNonNull(name, "name");
@@ -698,6 +765,11 @@ public final class AgentGraph implements Agent {
 
         public Builder approvalGate(ApprovalGate gate) {
             this.approvalGate = Objects.requireNonNull(gate, "gate");
+            return this;
+        }
+
+        public Builder runLog(RunLogStore store) {
+            this.runLogStore = Objects.requireNonNull(store, "store");
             return this;
         }
 

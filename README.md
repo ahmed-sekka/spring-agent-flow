@@ -170,6 +170,7 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
   - [Recipe: approval via Slack](docs/recipes/approval-via-slack.md) — async, non-blocking, ~30 lines
 - [Resilience & error handling](docs/resilience.md) — retries, circuit breaker, budget policy
 - [Observability](docs/observability.md) — Micrometer metrics, tags, listeners
+- [Run log](docs/run-log.md) — structured, replayable execution timeline per run
 - [Streaming](docs/streaming.md) — `Flux<AgentEvent>` tokens, transitions, tool calls
 - [Testing without an LLM](docs/testing.md) — `MockAgent` + `TestGraph`
 - [Samples](docs/samples.md) — runnable examples shipped with the repo

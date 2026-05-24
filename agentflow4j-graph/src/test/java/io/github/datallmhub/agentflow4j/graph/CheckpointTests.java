@@ -74,13 +74,17 @@ class CheckpointTests {
     }
 
     @Test
-    void invokeWithRunIdRequiresCheckpointStore() {
+    void invokeWithRunIdRunsWithoutCheckpointStore() {
+        // A runId is a general run identifier (used by checkpointing AND the
+        // run log). Without a CheckpointStore it simply runs uncheckpointed.
         AgentGraph graph = AgentGraph.builder()
                 .addNode("a", ctx -> AgentResult.ofText("A"))
                 .build();
 
-        assertThatThrownBy(() -> graph.invoke(AgentContext.empty(), "r"))
-                .isInstanceOf(IllegalStateException.class);
+        AgentResult result = graph.invoke(AgentContext.empty(), "r");
+        assertThat(result.completed()).isTrue();
+
+        // resume still requires a store — there is nothing to load otherwise
         assertThatThrownBy(() -> graph.resume("r"))
                 .isInstanceOf(IllegalStateException.class);
     }
