@@ -3,7 +3,7 @@
 **Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**
 
 <p align="center">
-<img width="760" alt="AgentFlow4J — a multi-agent workflow running live" src="docs/images/use-case.gif" />
+<img width="250" height="400" alt="AgentFlow4J" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
 </p>
 
 No orchestration boilerplate. No hidden execution. Just define your agents and run.
@@ -25,6 +25,18 @@ mvn -pl agentflow4j-samples exec:java
 ```
 
 Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: triage → specialist → policy gate → reply. Falls back to deterministic stubs offline, or calls Mistral when `MISTRAL_API_KEY` is set.
+
+---
+
+## 🎬 Example in action
+
+One real workflow built with AgentFlow4J — a customer-support triage app. This is **one sample use case**, not the framework itself; you compose your own agents and graphs the same way.
+
+<p align="center">
+<img width="760" alt="A customer-support multi-agent workflow built with AgentFlow4J, running live" src="docs/images/use-case.gif" />
+</p>
+
+▶ Live demo: <https://huggingface.co/spaces/datallmhub/multi-agent-customer-ops>
 
 ---
 
