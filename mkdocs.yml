@@ -41,6 +41,7 @@ theme:
     text: Inter
     code: JetBrains Mono
   icon:
+    logo: material/graph-outline
     repo: fontawesome/brands/github
 
 markdown_extensions:
