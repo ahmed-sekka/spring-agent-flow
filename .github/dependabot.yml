@@ -1,36 +1,33 @@
 version: 2
 updates:
-  # Maven dependencies across the whole multi-module reactor.
+  # All Maven updates land in ONE grouped PR (minor + patch only).
+  # Major bumps are ignored so they never auto-PR — Boot 4 / Spring Framework 7
+  # / Spring AI 2.0 are deliberate migrations done by hand, not by the bot.
   - package-ecosystem: maven
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 3
     groups:
-      # Group the Spring ecosystem so a Boot/Framework/AI bump arrives as one PR
-      # instead of a dozen — most security advisories here move together.
-      spring:
+      maven:
+        applies-to: version-updates
         patterns:
-          - "org.springframework"
-          - "org.springframework.*"
-          - "org.springframework.boot:*"
-          - "org.springframework.ai:*"
-      # Server / templating stack pulled in by the playground + samples.
-      web-runtime:
-        patterns:
-          - "org.apache.tomcat.embed:*"
-          - "org.thymeleaf:*"
-          - "ch.qos.logback:*"
-      # Test + build tooling.
-      test-tooling:
-        patterns:
-          - "org.junit.*"
-          - "org.assertj:*"
-          - "org.mockito:*"
+          - "*"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"
 
-  # Keep GitHub Actions workflows (docs site deploy, CI) current.
+  # GitHub Actions, also grouped into one PR.
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 1
+    groups:
+      github-actions:
+        patterns:
+          - "*"
