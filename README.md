@@ -187,6 +187,8 @@ dependencies { implementation 'com.github.datallmhub.agentflow4j:agentflow4j-sta
 - [Testing without an LLM](docs/testing.md) — `MockAgent` + `TestGraph`
 - [Samples](docs/samples.md) — runnable examples shipped with the repo
 
+**Cookbook:** [AgentFlow4J Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) — standalone, copy-paste recipes (RAG agent, support-ticket triage, web research, Slack bot, batch document processing), each a self-contained Maven module that runs locally against Ollama.
+
 **Tutorial:** [Stop your AI agent from burning $1000 overnight](docs/tutorials/stop-your-agent-burning-money.md) — governed execution end to end.
 
 ---
