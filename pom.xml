@@ -55,6 +55,10 @@
         <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
         <logback.override.version>1.5.25</logback.override.version>
         <xmlunit.override.version>2.10.0</xmlunit.override.version>
+        <!-- Web stack: pulled in by the playground (web app) and samples.
+             Boot 3.3.x pins older tomcat/thymeleaf than the latest CVE fixes. -->
+        <tomcat.override.version>10.1.55</tomcat.override.version>
+        <thymeleaf.override.version>3.1.5.RELEASE</thymeleaf.override.version>
     </properties>
 
     <dependencyManagement>
@@ -89,6 +93,31 @@
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
                 <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf</artifactId>
+                <version>${thymeleaf.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.thymeleaf</groupId>
+                <artifactId>thymeleaf-spring6</artifactId>
+                <version>${thymeleaf.override.version}</version>
             </dependency>
 
             <dependency>
