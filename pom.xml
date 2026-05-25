@@ -53,11 +53,11 @@
              do not apply — they must be pinned explicitly in
              dependencyManagement, ahead of the BOM import, so they win. -->
         <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
-        <logback.override.version>1.5.25</logback.override.version>
+        <logback.override.version>1.5.32</logback.override.version>
         <xmlunit.override.version>2.10.0</xmlunit.override.version>
         <!-- Web stack: pulled in by the playground (web app) and samples.
              Boot 3.3.x pins older tomcat/thymeleaf than the latest CVE fixes. -->
-        <tomcat.override.version>10.1.55</tomcat.override.version>
+        <tomcat.override.version>11.0.22</tomcat.override.version>
         <thymeleaf.override.version>3.1.5.RELEASE</thymeleaf.override.version>
         <!-- Spring Framework: Boot 3.4.13 pins 6.2.15; bump to 6.2.18 to clear
              the spring-webmvc / spring-webflux advisories (fixed in 6.2.18). -->
