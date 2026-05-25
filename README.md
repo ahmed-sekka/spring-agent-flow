@@ -3,7 +3,8 @@
 **Build governed, stateful multi-agent workflows in Java — orchestration, persistence, and runtime observability.**
 
 <p align="center">
-<img width="250" height="400" alt="AgentFlow4J" src="https://github.com/user-attachments/assets/7c954ec6-a6f5-42f8-8f84-1de9332debd1" />
+<img width="1536" height="1024" alt="agentflow4j-functions" src="https://github.com/user-attachments/assets/b81d8527-f99e-450c-a22b-28cbbb6b98dc" />
+
 </p>
 
 No orchestration boilerplate. No hidden execution. Just define your agents and run.
