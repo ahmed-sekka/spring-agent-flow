@@ -1,0 +1,31 @@
+/* ---------------------------------------------------------------------------
+   Left navigation — clear visual hierarchy between section headers and pages.
+
+   Section labels (Get started, Governance, …) are <label> elements rendered by
+   `navigation.sections`; page links are <a> elements. Styling each by element
+   type avoids any specificity conflict.
+   --------------------------------------------------------------------------- */
+
+/* Section headers: bold, uppercase, slightly LARGER than page links */
+.md-nav--primary .md-nav__item--section > label.md-nav__link,
+.md-nav--primary .md-nav__item--section > span.md-nav__link {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--md-default-fg-color);
+  margin-top: 1.1rem;
+  margin-bottom: 0.2rem;
+  cursor: default;
+}
+
+/* Page links: normal weight + case, slightly smaller than Material default */
+.md-nav--primary a.md-nav__link {
+  font-size: 0.76rem;
+}
+
+/* Active page link: accent colour + medium weight = clear "you are here" */
+.md-nav--primary a.md-nav__link--active {
+  font-weight: 600;
+  color: var(--md-primary-fg-color);
+}

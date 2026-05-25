@@ -9,6 +9,12 @@ edit_uri: edit/main/docs/
 
 docs_dir: docs
 
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/header-home-link.js
+
 theme:
   name: material
   language: en
@@ -92,6 +98,7 @@ nav:
 plugins:
   - search
   - social:
+      enabled: !ENV [SOCIAL_CARDS, true]   # set SOCIAL_CARDS=false for local preview without Cairo
       cards: true
       cards_layout_options:
         background_color: "#0f172a"  # slate-900
