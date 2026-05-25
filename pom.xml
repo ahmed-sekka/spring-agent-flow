@@ -59,6 +59,9 @@
              Boot 3.3.x pins older tomcat/thymeleaf than the latest CVE fixes. -->
         <tomcat.override.version>10.1.55</tomcat.override.version>
         <thymeleaf.override.version>3.1.5.RELEASE</thymeleaf.override.version>
+        <!-- Spring Framework: Boot 3.4.13 pins 6.2.15; bump to 6.2.18 to clear
+             the spring-webmvc / spring-webflux advisories (fixed in 6.2.18). -->
+        <spring-framework.override.version>6.2.18</spring-framework.override.version>
     </properties>
 
     <dependencyManagement>
@@ -118,6 +121,13 @@
                 <groupId>org.thymeleaf</groupId>
                 <artifactId>thymeleaf-spring6</artifactId>
                 <version>${thymeleaf.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring-framework.override.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <dependency>

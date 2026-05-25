@@ -1,0 +1,36 @@
+version: 2
+updates:
+  # Maven dependencies across the whole multi-module reactor.
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      # Group the Spring ecosystem so a Boot/Framework/AI bump arrives as one PR
+      # instead of a dozen — most security advisories here move together.
+      spring:
+        patterns:
+          - "org.springframework"
+          - "org.springframework.*"
+          - "org.springframework.boot:*"
+          - "org.springframework.ai:*"
+      # Server / templating stack pulled in by the playground + samples.
+      web-runtime:
+        patterns:
+          - "org.apache.tomcat.embed:*"
+          - "org.thymeleaf:*"
+          - "ch.qos.logback:*"
+      # Test + build tooling.
+      test-tooling:
+        patterns:
+          - "org.junit.*"
+          - "org.assertj:*"
+          - "org.mockito:*"
+
+  # Keep GitHub Actions workflows (docs site deploy, CI) current.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
