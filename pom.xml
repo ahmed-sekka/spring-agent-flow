@@ -46,10 +46,51 @@
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.27.7</assertj.version>
         <mockito.version>5.11.0</mockito.version>
+
+        <!-- Security overrides: these fix versions are newer than the Spring
+             Boot 3.3.x BOM pins. Because we import the Boot BOM (rather than
+             inherit spring-boot-starter-parent), version-property overrides
+             do not apply — they must be pinned explicitly in
+             dependencyManagement, ahead of the BOM import, so they win. -->
+        <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
+        <logback.override.version>1.5.25</logback.override.version>
+        <xmlunit.override.version>2.10.0</xmlunit.override.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Security overrides — declared BEFORE the Spring Boot BOM so
+                 they take precedence over the versions it manages. Each fixes
+                 a Dependabot advisory whose patched version the 3.3.x BOM does
+                 not yet pin. -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-bom.override.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>${logback.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>${logback.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-core</artifactId>
+                <version>${xmlunit.override.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
