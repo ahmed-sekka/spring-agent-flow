@@ -92,6 +92,7 @@ nav:
       - Approval via Slack: recipes/approval-via-slack.md
       - Durable runs: recipes/durable-runs.md
   - Tutorials:
+      - "Run your first agent for free (Mistral)": tutorials/free-mistral-quickstart.md
       - "Stop your agent burning $1000 overnight": tutorials/stop-your-agent-burning-money.md
   - Testing: testing.md
   - Samples: samples.md
