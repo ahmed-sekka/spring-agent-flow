@@ -46,10 +46,34 @@
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.27.7</assertj.version>
         <mockito.version>5.11.0</mockito.version>
+
+        <!-- Single security pin: Boot 3.5.14 ships tomcat 10.1.54, one patch
+             behind the fix (10.1.55) for several critical/high tomcat-embed
+             advisories. Same 10.1.x line — drop this once Boot pins 10.1.55+. -->
+        <tomcat.version>10.1.55</tomcat.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Security pin ahead of the Boot BOM: tomcat 10.1.55 fixes
+                 critical/high tomcat-embed advisories that 10.1.54 (Boot 3.5.14's
+                 default) is still exposed to. Stays on the 10.1.x line. -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
