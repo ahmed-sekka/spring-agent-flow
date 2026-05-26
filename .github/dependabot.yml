@@ -17,9 +17,17 @@ updates:
           - minor
           - patch
     ignore:
+      # No automatic major bumps anywhere — Boot 4 / Spring Framework 7 /
+      # Spring AI 2.0 are deliberate, hand-driven migrations.
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
+      # Spring AI changes its public API on MINOR bumps (1.0 -> 1.1 broke the
+      # checkpoint codec's AssistantMessage / ToolResponseMessage usage), so
+      # only patch updates (1.0.x) are allowed automatically; minor is manual.
+      - dependency-name: "org.springframework.ai:*"
+        update-types:
+          - "version-update:semver-minor"
 
   # GitHub Actions, also grouped into one PR.
   - package-ecosystem: github-actions
