@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ main ]
 
+# Least-privilege GITHUB_TOKEN: the build only needs to read the repo.
+# Artifact upload uses the run's own storage and needs no repo write scope.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
