@@ -39,97 +39,17 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <spring-boot.version>3.4.13</spring-boot.version>
-        <spring-ai.version>1.0.7</spring-ai.version>
+        <spring-boot.version>3.5.14</spring-boot.version>
+        <spring-ai.version>1.0.8</spring-ai.version>
         <resilience4j.version>2.2.0</resilience4j.version>
 
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.27.7</assertj.version>
         <mockito.version>5.11.0</mockito.version>
-
-        <!-- Security overrides: these fix versions are newer than the Spring
-             Boot 3.3.x BOM pins. Because we import the Boot BOM (rather than
-             inherit spring-boot-starter-parent), version-property overrides
-             do not apply — they must be pinned explicitly in
-             dependencyManagement, ahead of the BOM import, so they win. -->
-        <jackson-bom.override.version>2.18.6</jackson-bom.override.version>
-        <logback.override.version>1.5.32</logback.override.version>
-        <xmlunit.override.version>2.10.0</xmlunit.override.version>
-        <!-- Web stack: pulled in by the playground (web app) and samples.
-             Boot 3.3.x pins older tomcat/thymeleaf than the latest CVE fixes. -->
-        <tomcat.override.version>11.0.22</tomcat.override.version>
-        <thymeleaf.override.version>3.1.5.RELEASE</thymeleaf.override.version>
-        <!-- Spring Framework: Boot 3.4.13 pins 6.2.15; bump to 6.2.18 to clear
-             the spring-webmvc / spring-webflux advisories (fixed in 6.2.18). -->
-        <spring-framework.override.version>6.2.18</spring-framework.override.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            <!-- Security overrides — declared BEFORE the Spring Boot BOM so
-                 they take precedence over the versions it manages. Each fixes
-                 a Dependabot advisory whose patched version the 3.3.x BOM does
-                 not yet pin. -->
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>${jackson-bom.override.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-core</artifactId>
-                <version>${logback.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>ch.qos.logback</groupId>
-                <artifactId>logback-classic</artifactId>
-                <version>${logback.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.xmlunit</groupId>
-                <artifactId>xmlunit-core</artifactId>
-                <version>${xmlunit.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <version>${assertj.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>${tomcat.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-el</artifactId>
-                <version>${tomcat.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-websocket</artifactId>
-                <version>${tomcat.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf</artifactId>
-                <version>${thymeleaf.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.thymeleaf</groupId>
-                <artifactId>thymeleaf-spring6</artifactId>
-                <version>${thymeleaf.override.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-framework-bom</artifactId>
-                <version>${spring-framework.override.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
