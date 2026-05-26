@@ -75,6 +75,7 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Get started:
+      - Getting started: getting-started.md
       - Two API levels: two-api-levels.md
       - LLM providers: llm-providers.md
       - Typed state: state.md
@@ -94,6 +95,7 @@ nav:
       - "Stop your agent burning $1000 overnight": tutorials/stop-your-agent-burning-money.md
   - Testing: testing.md
   - Samples: samples.md
+  - Cookbook ↗: https://github.com/datallmhub/agentflow4j-cookbook
 
 plugins:
   - search

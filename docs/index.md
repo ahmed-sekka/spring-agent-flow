@@ -42,6 +42,8 @@ Runs `SupportTriageDemo` — a customer-support ticket flowing through a graph: 
 
 ## Where to next
 
+- **First time?** The [Getting started](getting-started.md) guide takes you from `mvn` dependency to a running graph.
+- **Want runnable examples?** The [Cookbook](https://github.com/datallmhub/agentflow4j-cookbook) has five self-contained Java recipes — RAG, ticket triage, web research, Slack bot, batch processing.
 - **New here?** Start with [Two API levels](two-api-levels.md) — the Squad vs Graph distinction.
 - **Worried about cost or unsafe actions?** Read the [governance trilogy](tool-policy.md): tool, state and approval gates.
 - **Building for production?** [Durable runs](recipes/durable-runs.md) shows how to survive a mid-workflow crash.
